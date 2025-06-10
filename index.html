@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOLlogix - Corco Chemical Corporation</title>
+  
+  <!-- Add Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Add Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #145e3f; /* Light green */
+      --secondary: #0b2b1d; /* Dark green */
+      --accent: #D0F0C0; /* Pale Green */
+      --light: #F0FFF0; /* Very light green for backgrounds */
+      --dark: #001f3d; /* Darker green */
+      --warning: #f0ad4e; /* For hazmat warnings */
+      --success: #28a745; /* For success messages */
+      --danger: #dc3545; /* For error/delete actions */
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+    
+    .header {
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      color: white;
+      padding: 0.60 rem 0;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 0;
+      width: 30%;
+      height: 100%;
+      background: linear-gradient(135deg, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
+      z-index: 1;
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0;
+    }
+    
+    .corco-logo {
+      max-height: 110px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+    
+    .page-title {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin: 0;
+      color: white;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .sub-title {
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.8);
+      margin-top: 0;
+    }
+    
+    .nav-tabs {
+      border-bottom: none;
+      margin-bottom: 1.5rem;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 59, 113, 0.1);
+      padding: 0.5rem;
+    }
+    
+    .nav-tabs .nav-link {
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      color: var(--primary);
+      font-weight: 500;
+      transition: all 0.2s ease;
+      margin: 0 0.25rem;
+    }
+    
+    .nav-tabs .nav-link:hover {
+      background-color: var(--light);
+      color: var(--secondary);
+    }
+    
+    .nav-tabs .nav-link.active {
+      background-color: var(--primary);
+      color: white;
+      box-shadow: 0 4px 8px rgba(0, 59, 113, 0.2);
+    }
+    
+    .card {
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+    
+    .card-header {
+      background-color: white;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      padding: 1rem 1.25rem;
+      font-weight: 500;
+    }
+    
+    .card-header h5 {
+      margin: 0;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    
+    .card-body {
+      padding: 1.5rem;
+    }
+    
+    .form-control, .form-select {
+      border-radius: 6px;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid #ced4da;
+      transition: all 0.2s;
+    }
+    
+    .form-control:focus, .form-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 0.25rem rgba(0, 167, 225, 0.25);
+    }
+    
+    .btn {
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--secondary);
+      border-color: var(--secondary);
+    }
+    
+    .btn-success {
+      background-color: var(--success);
+      border-color: var(--success);
+    }
+    
+    .btn-outline-primary {
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+    
+    .btn-outline-primary:hover {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .btn-danger {
+      background-color: var(--danger);
+      border-color: var(--danger);
+    }
+    
+    /* Items section styling */
+    .bol-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+    
+    .shipping-info, .items-section {
+      flex: 1;
+      min-width: 400px;
+    }
+    
+    .section-title {
+      color: var(--primary);
+      margin-bottom: 1rem;
+      font-weight: 600;
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 0.5rem;
+      display: inline-block;
+    }
+    
+    .item-card {
+      border-left: 4px solid var(--primary);
+      transition: all 0.2s;
+    }
+    
+    .item-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .pallet-card {
+      border-left: 4px solid var(--accent);
+    }
+    
+    .table-responsive {
+      max-height: 600px;
+      overflow-y: auto; /* enables vertical scrolling */
+      overflow-x: auto; /* optional, for horizontal scroll on small screens */
+      border-radius: 8px;
+    }
+    
+    .table {
+      margin-bottom: 0;
+    }
+    
+    .table th {
+      background-color: var(--light);
+      color: var(--primary);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    .inventory-table th, .clients-table th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background-color: var(--light);
+    }
+    
+    .inventory-table, .clients-table {
+      font-size: 0.85rem;
+    }
+    
+    .table-hover tbody tr:hover {
+      background-color: rgba(0, 167, 225, 0.05);
+    }
+    
+    .table-warning {
+      background-color: rgba(240, 173, 78, 0.15) !important;
+    }
+    
+    .table-secondary {
+      background-color: rgba(108, 117, 125, 0.15) !important;
+    }
+    
+    .search-box {
+      margin-bottom: 1.25rem;
+    }
+    
+    .search-box .input-group {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .search-box .input-group-text {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+    }
+    
+    .badge {
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+    
+    .toast {
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      font-weight: 500;
+    }
+    
+    /* Modal styling */
+    .modal-content {
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      border: none;
+    }
+    
+    .modal-header {
+      background-color: var(--primary);
+      color: white;
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+    }
+    
+    .modal-title {
+      font-weight: 600;
+    }
+    
+    .modal-body {
+      padding: 1.75rem;
+    }
+    
+    .modal-footer {
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+      padding: 1rem 1.75rem;
+    }
+    
+    /* Form styling */
+    .form-label {
+      color: var(--dark);
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+    
+    .form-required:after {
+      content: "*";
+      color: var(--danger);
+      margin-left: 3px;
+    }
+    
+    /* Action buttons */
+    .action-btn-container {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .inventory-action-btn, .client-action-btn {
+      font-size: 0.8rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+    }
+    
+    /* For hazmat and inactive status indicators */
+    .hazmat-tag {
+      background-color: var(--warning);
+      color: white;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      display: inline-block;
+      margin-left: 0.5rem;
+    }
+    
+    .inactive-tag {
+      background-color: #6c757d;
+      color: white;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      display: inline-block;
+      margin-left: 0.5rem;
+    }
+    
+    /* Total weight display */
+    #totalWeightDiv {
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 1.2rem;
+      margin-top: 1.5rem;
+      box-shadow: 0 4px 8px rgba(0, 59, 113, 0.2);
+    }
+    
+    /* Empty states */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: #6c757d;
+    }
+    
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--light);
+    }
+    
+    .empty-state p {
+      margin-bottom: 1.5rem;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+      .shipping-info, .items-section {
+        flex: 100%;
+      }
+      
+      .page-title {
+        font-size: 1.8rem;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .nav-tabs .nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+      }
+      
+      .card-body {
+        padding: 1rem;
+      }
+      
+      .page-title {
+        font-size: 1.5rem;
+      }
+    }
+    
+    /* Text alignment classes */
+    .text-center-header {
+      text-align: center;
+    }
+    
+    /* Generate button */
+    .generate-btn-container {
+      text-align: center;
+      margin: 2rem 0;
+    }
+    
+    .generate-btn {
+      padding: 0.75rem 2rem;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+      transform: translateY(0);
+      transition: all 0.3s;
+    }
+    
+    .generate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="container">
+      <div class="logo-container">
+		  <img src="corco-logo.png" alt="Corco Chemical Corporation" class="corco-logo">
+		<h1 class="page-title">Shipping & Inventory Management Sysytem</h1>  
+        <div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container mt-4">
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs" id="appTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="bolgen-tab" data-bs-toggle="tab" data-bs-target="#bolgen" type="button" role="tab" aria-controls="bolgen" aria-selected="true">
+          <i class="fas fa-file-invoice me-2"></i>BOL Generator
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory" type="button" role="tab" aria-controls="inventory" aria-selected="false">
+          <i class="fas fa-boxes me-2"></i>Products
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="clients-tab" data-bs-toggle="tab" data-bs-target="#clients" type="button" role="tab" aria-controls="clients" aria-selected="false">
+          <i class="fas fa-users me-2"></i>Clients
+        </button>
+      </li>
+    </ul>
+    
+    <!-- Tab Content -->
+    <div class="tab-content" id="appTabsContent">
+      <!-- BOL Generator Tab -->
+      <div class="tab-pane fade show active" id="bolgen" role="tabpanel" aria-labelledby="bolgen-tab">
+        <div class="d-flex align-items-center mb-3">
+          <div class="bg-light p-2 rounded-circle me-2">
+            <i class="fas fa-info-circle text-primary"></i>
+          </div>
+          <p class="mb-0">Create a new Bill of Lading document using your current inventory.</p>
+        </div>
+        
+        <div class="bol-container" id="bolForm">
+          <!-- Shipping Information - Left side -->
+          <div class="shipping-info">
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5><i class="fas fa-shipping-fast me-2"></i>Shipping Information</h5>
+              </div>
+              <div class="card-body">
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="shipDate" class="form-label">Date:</label>
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-calendar"></i></span>
+                      <input type="date" class="form-control" id="shipDate" value="">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="carrier" class="form-label">Carrier:</label>
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-truck"></i></span>
+                      <input type="text" class="form-control" id="carrier" value="World Wide Express 3rd Party">
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Client dropdown -->
+                <div class="mb-3">
+                  <label for="clientSelect" class="form-label">Select Client:</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-building"></i></span>
+                    <select class="form-select" id="clientSelect">
+                      <option value="">Select a client...</option>
+                      <!-- Options will be populated from JavaScript -->
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <h6 class="section-title">To:</h6>
+                  <div class="mb-2">
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-building"></i></span>
+                      <input type="text" class="form-control" id="toName" placeholder="Company Name" value="AquaPhoenix Scientific">
+                    </div>
+                  </div>
+                  <div class="mb-2">
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                      <input type="text" class="form-control" id="toAddress" placeholder="Address" value="860 Gitts Run Road">
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-5">
+                      <input type="text" class="form-control" id="toCity" placeholder="City" value="Hanover">
+                    </div>
+                    <div class="col-md-3">
+                      <input type="text" class="form-control" id="toState" placeholder="State" value="PA">
+                    </div>
+                    <div class="col-md-4">
+                      <input type="text" class="form-control" id="toZip" placeholder="ZIP" value="17331">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <h6 class="section-title">From:</h6>
+                  <div class="mb-2">
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-building"></i></span>
+                      <input type="text" class="form-control" id="fromName" placeholder="Company Name" value="Corco Chemical Corporation">
+                    </div>
+                  </div>
+                  <div class="mb-2">
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                      <input type="text" class="form-control" id="fromAddress" placeholder="Address" value="299 Cedar Lane">
+                    </div>
+                  </div>
+                  <div class="row mb-2">
+                    <div class="col-md-5">
+                      <input type="text" class="form-control" id="fromCity" placeholder="City" value="Fairless Hills">
+                    </div>
+                    <div class="col-md-3">
+                      <input type="text" class="form-control" id="fromState" placeholder="State" value="PA">
+                    </div>
+                    <div class="col-md-4">
+                      <input type="text" class="form-control" id="fromZip" placeholder="ZIP" value="19030">
+                    </div>
+                  </div>
+                  <div>
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                      <input type="text" class="form-control" id="fromPhone" placeholder="Telephone" value="215-295-5006">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <h6 class="section-title">3rd Party Freight Charges To:</h6>
+                  <div class="mb-2">
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-building"></i></span>
+                      <input type="text" class="form-control" id="thirdPartyName" placeholder="Company Name" value="Worldwide Express">
+                    </div>
+                  </div>
+                  <div class="mb-2">
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                      <input type="text" class="form-control" id="thirdPartyAddress" placeholder="Address" value="2323 Victory Avenue Ste 1600">
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-5">
+                      <input type="text" class="form-control" id="thirdPartyCity" placeholder="City" value="Dallas">
+                    </div>
+                    <div class="col-md-3">
+                      <input type="text" class="form-control" id="thirdPartyState" placeholder="State" value="TX">
+                    </div>
+                    <div class="col-md-4">
+                      <input type="text" class="form-control" id="thirdPartyZip" placeholder="ZIP" value="75219">
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <label for="freightCharges" class="form-label">Freight Charges:</label>
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
+                      <select class="form-select" id="freightCharges">
+                        <option value="Collect" selected>Collect</option>
+                        <option value="Prepaid">Prepaid</option>
+                        <option value="COD Prepaid">COD Prepaid</option>
+                        <option value="COD Collect">COD Collect</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="placardsSupplied" class="form-label">Placards Supplied:</label>
+                    <div class="input-group">
+                      <span class="input-group-text"><i class="fas fa-exclamation-triangle"></i></span>
+                      <select class="form-select" id="placardsSupplied">
+                        <option value="NO" selected>NO</option>
+                        <option value="YES">YES</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="poNumberInput" class="form-label">PO Numbers:</label>
+                  <div class="input-group mb-2">
+                    <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                    <input type="text" class="form-control" id="poNumberInput" placeholder="Enter PO Number">
+                    <button class="btn btn-outline-primary" type="button" id="addPoBtn"><i class="fas fa-plus"></i> Add</button>
+                  </div>
+                  <div id="poNumbersList" class="d-flex flex-wrap gap-2 mt-2"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Items section - Right side -->
+          <div class="items-section">
+            <div class="card mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-clipboard-list me-2"></i>Items</h5>
+                <div class="action-btn-container">
+                  <button id="addItemBtn" class="btn btn-sm btn-success">
+                    <i class="fas fa-plus me-1"></i> Add Item
+                  </button>
+                  <button id="addPalletBtn" class="btn btn-sm btn-primary">
+                    <i class="fas fa-pallet me-1"></i> Add Pallet
+                  </button>
+                  <button id="clearItemsBtn" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash me-1"></i> Clear All
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="itemsList"></div>
+                <div id="noItemsMsg" class="empty-state">
+                  <i class="fas fa-clipboard"></i>
+                  <p>No items added to the bill of lading yet.</p>
+                  <button id="addFirstItemBtn" class="btn btn-success">
+                    <i class="fas fa-plus me-1"></i> Add First Item
+                  </button>
+                </div>
+                <div id="totalWeightDiv" style="display: none;">
+                  <i class="fas fa-weight me-2"></i> Total Weight: <span id="totalWeight">0</span> lbs
+                </div>
+              </div>
+            </div>
+            
+            <!-- Generate button -->
+            <div class="generate-btn-container">
+              <button id="generateBtn" class="btn btn-lg btn-success generate-btn">
+                <i class="fas fa-file-export me-2"></i> Generate Bill of Lading
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Inventory Tab -->
+      <div class="tab-pane fade" id="inventory" role="tabpanel" aria-labelledby="inventory-tab">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="fas fa-boxes me-2"></i>Product Inventory Management</h5>
+            <div class="action-btn-container">
+              <button id="addProductBtn" class="btn btn-sm btn-success">
+                <i class="fas fa-plus me-1"></i> Add New Product
+              </button>
+              <button id="refreshInventoryBtn" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-sync-alt me-1"></i> Refresh
+              </button>
+              <button id="exportInventoryBtn" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-file-export me-1"></i> Export
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <p id="productCount" class="mb-2">Products loading...</p>
+                <div class="d-flex gap-3">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="showActiveOnly" unchecked>
+                    <label class="form-check-label" for="showActiveOnly">
+                      <i class="fas fa-check-circle me-1 text-success"></i> Show active products only
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="showHazmatOnly">
+                    <label class="form-check-label" for="showHazmatOnly">
+                      <i class="fas fa-exclamation-triangle me-1 text-warning"></i> Show hazmat products only
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="search-box">
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" id="inventorySearch" placeholder="Search by product name, code, or description...">
+                <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn">Clear</button>
+              </div>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="table table-sm table-striped table-hover inventory-table" id="inventoryTable">
+                <thead>
+                  <tr>
+                    <th class="text-center-header">Actions</th>
+                    <th>Product Name</th>
+                    <th class="text-center-header">Product Code</th>
+                    <th>U/M</th>
+                    <th>Product Description</th>
+                    <th>Grade</th>
+                    <th>NMFC</th>
+                    <th class="text-center-header">Freight <br> Class</th>
+                    <th class="text-center-header">Packing <br> Group</th>
+                    <th class="text-center-header">Net Weight <br> Per Package</th>
+                    <th class="text-center-header">Gross Weight <br> Per Package</th>
+                    <th>Stackable?</th>
+                    <th class="text-center-header">Hazardous <br> Material?</th>
+                    <th class="text-center-header">Hazmat <br> Class</th>
+                    <th class="text-center-header">Non Hazmat <br> Class</th>
+                    <th>Account</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="inventoryTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Clients Tab -->
+      <div class="tab-pane fade" id="clients" role="tabpanel" aria-labelledby="clients-tab">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5><i class="fas fa-users me-2"></i>Client Management</h5>
+            <div class="action-btn-container">
+              <button id="addClientBtn" class="btn btn-sm btn-success">
+                <i class="fas fa-plus me-1"></i> Add New Client
+              </button>
+              <button id="refreshClientsBtn" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-sync-alt me-1"></i> Refresh
+              </button>
+              <button id="exportClientsBtn" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-file-export me-1"></i> Export
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="row mb-3">
+              <div class="col-md-12">
+                <p id="clientCount" class="mb-2">Clients loading...</p>
+                <div class="d-flex gap-2">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="showActiveClientsOnly" checked>
+                    <label class="form-check-label" for="showActiveClientsOnly">
+                      <i class="fas fa-check-circle me-1 text-success"></i> Show active clients only
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="search-box">
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" id="clientsSearch" placeholder="Search by client name, code, or address...">
+                <button class="btn btn-outline-secondary" type="button" id="clearClientSearchBtn">Clear</button>
+              </div>
+            </div>
+            
+            <div class="table-responsive">
+              <table class="table table-sm table-striped table-hover clients-table" id="clientsTable">
+                <thead>
+                  <tr>
+                    <th>Actions</th>
+                    <th>Client Name</th>
+                    <th>Client Code</th>
+                    <th>Address</th>
+                    <th>City</th>
+                    <th>State</th>
+                    <th>ZIP</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Contact Person</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="clientsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Product Form Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="productModalLabel">Add New Product</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="productForm">
+              <input type="hidden" id="editProductMode" value="false">
+              <input type="hidden" id="originalProductCode" value="">
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="productName" class="form-label form-required">Product Name</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-flask"></i></span>
+                    <input type="text" class="form-control" id="productName" required>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="productCode" class="form-label form-required">Product Code</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-barcode"></i></span>
+                    <input type="text" class="form-control" id="productCode" required>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="productDescription" class="form-label">Product Description</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-align-left"></i></span>
+                    <input type="text" class="form-control" id="productDescription">
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="productGrade" class="form-label">Grade</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                    <input type="text" class="form-control" id="productGrade">
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="productUnitOfMeasure" class="form-label">Unit of Measure</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-ruler"></i></span>
+                    <input type="text" class="form-control" id="productUnitOfMeasure" placeholder="LB, GAL, etc">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-3 mb-3">
+                  <label for="nmfcNumber" class="form-label">NMFC #</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                    <input type="number" class="form-control" id="nmfcNumber">
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="freightClass" class="form-label">Freight Class</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-truck-loading"></i></span>
+                    <input type="number" class="form-control" id="freightClass">
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="packingGroup" class="form-label">Packing Group</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-layer-group"></i></span>
+                    <select class="form-select" id="packingGroup">
+                      <option value=""></option>
+                      <option value="I">I</option>
+                      <option value="II">II</option>
+                      <option value="III">III</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="activeStatus" class="form-label">Status</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-toggle-on"></i></span>
+                    <select class="form-select" id="activeStatus">
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-3 mb-3">
+                  <label for="netWeight" class="form-label">Net Weight (Per Package)</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-weight"></i></span>
+                    <input type="number" class="form-control" id="netWeight" step="0.1">
+                    <span class="input-group-text">lbs</span>
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="grossWeight" class="form-label">Gross Weight (Per Package)</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-weight-hanging"></i></span>
+                    <input type="number" class="form-control" id="grossWeight" step="0.1">
+                    <span class="input-group-text">lbs</span>
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="productPrice" class="form-label">Price</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
+                    <input type="number" class="form-control" id="productPrice" step="0.01">
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="account" class="form-label">Account</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-folder"></i></span>
+                    <input type="text" class="form-control" id="account">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-3 mb-3">
+                  <label for="inventoryType" class="form-label">Inventory Type</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-cube"></i></span>
+                    <select class="form-select" id="inventoryType">
+                      <option value="HAZMAT">HAZMAT</option>
+                      <option value="NON-HAZMAT">NON-HAZMAT</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="isHazardousMaterial" class="form-label">Hazardous Material?</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-exclamation-triangle"></i></span>
+                    <select class="form-select" id="isHazardousMaterial">
+                      <option value="">No</option>
+                      <option value="x">Yes</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="hazmatClass" class="form-label">Hazmat Class</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-biohazard"></i></span>
+                    <input type="text" class="form-control" id="hazmatClass">
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="nonHazmatClass" class="form-label">Non Hazmat Class</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-check-circle"></i></span>
+                    <input type="text" class="form-control" id="nonHazmatClass">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-3 mb-3">
+                  <label for="stackable" class="form-label">Stackable?</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-cubes"></i></span>
+                    <select class="form-select" id="stackable">
+                      <option value="Yes">Yes</option>
+                      <option value="No">No</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="fas fa-times me-1"></i> Cancel
+            </button>
+            <button type="button" class="btn btn-danger" id="deleteProductBtn" style="display: none;">
+              <i class="fas fa-trash me-1"></i> Delete Product
+            </button>
+            <button type="button" class="btn btn-primary" id="saveProductBtn">
+              <i class="fas fa-save me-1"></i> Save Product
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Client Form Modal -->
+    <div class="modal fade" id="clientModal" tabindex="-1" aria-labelledby="clientModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="clientModalLabel">Add New Client</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="clientForm">
+              <input type="hidden" id="editClientMode" value="false">
+              <input type="hidden" id="originalClientCode" value="">
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="clientName" class="form-label form-required">Client Name</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-building"></i></span>
+                    <input type="text" class="form-control" id="clientName" required>
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="clientCode" class="form-label form-required">Client Code</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-fingerprint"></i></span>
+                    <input type="text" class="form-control" id="clientCode" required>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-12 mb-3">
+                  <label for="clientAddress" class="form-label">Address</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                    <input type="text" class="form-control" id="clientAddress">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-5 mb-3">
+                  <label for="clientCity" class="form-label">City</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-city"></i></span>
+                    <input type="text" class="form-control" id="clientCity">
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="clientState" class="form-label">State</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-map"></i></span>
+                    <input type="text" class="form-control" id="clientState" maxlength="2">
+                  </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                  <label for="clientZip" class="form-label">ZIP</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-mail-bulk"></i></span>
+                    <input type="text" class="form-control" id="clientZip">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="clientPhone" class="form-label">Phone</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                    <input type="tel" class="form-control" id="clientPhone">
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="clientEmail" class="form-label">Email</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                    <input type="email" class="form-control" id="clientEmail">
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="clientContact" class="form-label">Contact Person</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                    <input type="text" class="form-control" id="clientContact">
+                  </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="clientStatus" class="form-label">Status</label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-toggle-on"></i></span>
+                    <select class="form-select" id="clientStatus">
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="fas fa-times me-1"></i> Cancel
+            </button>
+            <button type="button" class="btn btn-danger" id="deleteClientBtn" style="display: none;">
+              <i class="fas fa-trash me-1"></i> Delete Client
+            </button>
+            <button type="button" class="btn btn-primary" id="saveClientBtn">
+              <i class="fas fa-save me-1"></i> Save Client
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="confirmationTitle">Confirm Action</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="confirmationMessage">
+            Are you sure you want to proceed with this action?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+              <i class="fas fa-times me-1"></i> Cancel
+            </button>
+            <button type="button" class="btn btn-danger" id="confirmActionBtn">
+              <i class="fas fa-check me-1"></i> Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Toast notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+      <div id="notification" class="toast align-items-center text-white bg-success" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+        <div class="d-flex">
+          <div class="toast-body" id="notificationText">
+            <i class="fas fa-check-circle me-2"></i>
+            <span id="toastMessage">Operation completed successfully</span>
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Include the main application script -->
+  <script src="app.js"></script>
+</body>
+</html>
