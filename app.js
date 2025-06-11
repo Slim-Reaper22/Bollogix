@@ -273,6 +273,16 @@ function setupClientSelectionListeners() {
 document.addEventListener('DOMContentLoaded', function() {
   console.log("DOM content loaded, initializing application...");
   
+  // Check authentication first
+  const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+  const rememberMe = localStorage.getItem('rememberMe') === 'true';
+  
+  if (!isLoggedIn && !rememberMe) {
+    // Redirect to login if not authenticated
+    window.location.href = 'login.html';
+    return;
+  }
+  
   // Apply custom styles
   applyCustomStyles();
   
@@ -3165,6 +3175,16 @@ function debugClientsLoading() {
 // Wait a short time after page load to check if data loaded correctly
 // Enhanced with better visual indicators
 setTimeout(function() {
+  // Check authentication again in case of delayed logout
+  const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+  const rememberMe = localStorage.getItem('rememberMe') === 'true';
+  
+  if (!isLoggedIn && !rememberMe) {
+    // If no longer authenticated, redirect to login
+    window.location.href = 'login.html';
+    return;
+  }
+  
   if (allProducts.length === 0) {
     console.log("No products loaded after timeout, loading mock data");
     showNotification('Server connection issue detected', 'warning');
@@ -3188,3 +3208,6 @@ window.debugInventory = debugInventoryLoading;
 window.debugClients = debugClientsLoading;
 window.loadMockData = loadMockInventoryData;
 window.loadMockClientsData = loadMockClientsData;
+window.removePoNumber = removePoNumber;
+window.updateItem = updateItem;
+window.removeItem = removeItem;
