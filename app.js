@@ -653,6 +653,8 @@ function loadInventoryFromServer() {
         renderInventoryTable([]); // Render empty table
         showNotification('No products found or error loading inventory', 'warning');
       }
+      
+      return data; // Return data for promise chain
     })
     .catch(error => {
       console.error('Error loading inventory:', error);
@@ -690,6 +692,7 @@ function loadInventoryFromServer() {
       }
       
       confirmModal.show();
+      throw error; // Re-throw error for promise chain
     });
 }
 
@@ -1581,7 +1584,7 @@ if (isEditMode && originalProductId) {
 // Save to server
 saveInventoryToServer(allProducts).then(() => {
   // Reload the inventory from server to get proper IDs
-  return loadInventoryFromServer();
+  return ();
 }).then(() => {
   // Update active products list
   products = allProducts.filter(p => p["Active Status"] === "Active");
