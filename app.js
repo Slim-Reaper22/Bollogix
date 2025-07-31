@@ -7,6 +7,8 @@ let bolItems = [];
 let poNumbers = [];
 let totalWeight = 0;
 
+
+
 // Custom CSS styles for animations and transitions
 const customStyles = `
   /* Animations and transitions */
@@ -612,7 +614,7 @@ function loadInventoryFromServer() {
     `;
   }
   
-  fetch('/api/inventory')
+  return fetch('/api/inventory')
     .then(response => {
       if (!response.ok) {
         throw new Error(`Server returned ${response.status} ${response.statusText}`);
@@ -648,10 +650,13 @@ function loadInventoryFromServer() {
         
         showNotification('Inventory loaded successfully', 'success');
         console.log(`Loaded ${allProducts.length} products (${products.length} active)`);
+        
+        return data; // Return the data for promise chaining
       } else {
         console.error("Invalid data format or empty data received from server", data);
         renderInventoryTable([]); // Render empty table
         showNotification('No products found or error loading inventory', 'warning');
+        throw new Error('Invalid data format');
       }
     })
     .catch(error => {
@@ -690,6 +695,7 @@ function loadInventoryFromServer() {
       }
       
       confirmModal.show();
+      throw error; // Re-throw for promise chaining
     });
 }
 
@@ -1126,21 +1132,25 @@ function renderInventoryTable(data) {
     const actionsTd = document.createElement('td');
     actionsTd.className = 'action-btn-container';
     
-    // Edit button
+    // Edit button - FIXED: Ensure ID is passed correctly
     const editBtn = document.createElement('button');
-    editBtn.className = 'btn btn-sm btn-primary inventory-action-btn';
-    editBtn.innerHTML = '<i class="fas fa-edit me-1"></i> Edit';
-    editBtn.addEventListener('click', () => openEditProductModal(product["ID"]));
+    editBtn.className = 'btn btn-sm btn-primary me-1';
+    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+    editBtn.title = 'Edit Product';
+    editBtn.onclick = function() {
+      openEditProductModal(product["ID"]);
+    };
     actionsTd.appendChild(editBtn);
     
-    // Delete button
+    // Delete button - FIXED: Ensure ID is passed correctly  
     const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'btn btn-sm btn-danger inventory-action-btn';
-    deleteBtn.innerHTML = '<i class="fas fa-trash-alt me-1"></i> Delete';
-    deleteBtn.addEventListener('click', () => confirmDeleteProduct(product["ID"]));
+    deleteBtn.className = 'btn btn-sm btn-danger';
+    deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+    deleteBtn.title = 'Delete Product';
+    deleteBtn.onclick = function() {
+      confirmDeleteProduct(product["ID"]);
+    };
     actionsTd.appendChild(deleteBtn);
-    
-    row.appendChild(actionsTd);
     
     // Add cells in the defined order
     columnOrder.forEach(key => {
@@ -1413,12 +1423,15 @@ function openAddClientModal() {
   }, 500);
 }
 
-// Open the edit product modal with enhanced UI
 function openEditProductModal(productId) {
-  // Find the product
-  const product = allProducts.find(p => p["ID"] === productId);
+  console.log('Opening edit modal for product ID:', productId);
+  
+  // FIXED: Handle both string and number IDs from database
+  const product = allProducts.find(p => p["ID"].toString() === productId.toString());
   if (!product) {
-    showNotification('Product not found', 'danger');
+    console.error('Product not found with ID:', productId);
+    console.log('Available product IDs:', allProducts.map(p => p["ID"]));
+    showNotification('Product not found. Please refresh the inventory list.', 'danger');
     return;
   }
   
@@ -1509,123 +1522,108 @@ function openEditClientModal(clientCode) {
   clientModal.show();
 }
 
-// Save product (add new or update existing) with improved validation
 function saveProduct() {
-  // Get form values
-  const originalProductId = document.getElementById('originalProductId').value;
   const form = document.getElementById('productForm');
   
-  // Basic validation
   if (!form.checkValidity()) {
-    // Trigger browser validation UI
     form.reportValidity();
     return;
   }
   
-  // Show saving indicator
   showNotification('Saving product...', 'info');
   
-  // Get edit mode and original product code
   const isEditMode = document.getElementById('editProductMode').value === 'true';
-  const originalProductCode = document.getElementById('originalProductCode').value;
+  const originalProductId = document.getElementById('originalProductId').value;
+  const productCode = document.getElementById('productCode').value.trim();
+
+  // Check for duplicate product codes (excluding current product if editing)
+  const existingProduct = allProducts.find(p => 
+    p["Product Code"] === productCode && 
+    (!isEditMode || p["ID"].toString() !== originalProductId)
+  );
   
-  // Create the product object
-  const product = {
-	"ID": isEditMode ? originalProductId : Date.now().toString(),  
-    "Product Name": document.getElementById('productName').value,
-    "Product Code": document.getElementById('productCode').value,
-    "Product Description": document.getElementById('productDescription').value,
-    "Grade": document.getElementById('productGrade').value,
-    "U/M": document.getElementById('productUnitOfMeasure').value,
-    "NMFC #": document.getElementById('nmfcNumber').value,
-    "Freight Class": document.getElementById('freightClass').value,
-    "Packing Group": document.getElementById('packingGroup').value,
+  if (existingProduct) {
+    showNotification('Product code already exists. Please use a unique code.', 'danger');
+    document.getElementById('productCode').focus();
+    return;
+  }
+
+  const product = { 
+    "Product Name": document.getElementById('productName').value.trim(),
+    "Product Code": productCode,
+    "Product Description": document.getElementById('productDescription').value.trim(),
+    "Grade": document.getElementById('productGrade').value.trim(),
+    "U/M": document.getElementById('productUnitOfMeasure').value.trim(),
+    "NMFC #": document.getElementById('nmfcNumber').value.trim(),
+    "Freight Class": document.getElementById('freightClass').value.trim(),
+    "Packing Group": document.getElementById('packingGroup').value.trim(),
     "Active Status": document.getElementById('activeStatus').value,
-    "Net Weight (Per Package)": document.getElementById('netWeight').value,
-    "Gross Weight (Per Package)": document.getElementById('grossWeight').value,
-    "Price": document.getElementById('productPrice').value,
-    "Account": document.getElementById('account').value,
+    "Net Weight (Per Package)": parseFloat(document.getElementById('netWeight').value) || 0,
+    "Gross Weight (Per Package)": parseFloat(document.getElementById('grossWeight').value) || 0,
+    "Price": parseFloat(document.getElementById('productPrice').value) || 0,
+    "Account": document.getElementById('account').value.trim(),
     "Inventory Type": document.getElementById('inventoryType').value,
     "Hazardous Material? (x if Yes)": document.getElementById('isHazardousMaterial').value,
-    "Hazmat Class": document.getElementById('hazmatClass').value,
-    "Non Hazmat Class": document.getElementById('nonHazmatClass').value,
+    "Hazmat Class": document.getElementById('hazmatClass').value.trim(),
+    "Non Hazmat Class": document.getElementById('nonHazmatClass').value.trim(),
     "Stackable?": document.getElementById('stackable').value
   };
-  
-  // Handle edit mode logic
-  if (isEditMode) {
-    // Check if product code has changed
-    if (originalProductCode !== product["Product Code"]) {
-      // This is a more complex update, need to delete old one first
-      const productCodeExists = allProducts.some(p => p["Product Code"] === product["Product Code"] && p["ID"] !== originalProductId);
-      if (productCodeExists) {
-        showNotification('Product code already exists', 'danger');
-        return;
-      }
-      
-      // Remove the old product
-      const oldProductIndex = allProducts.findIndex(p => p["ID"] === originalProductId);
-      if (oldProductIndex !== -1) {
-        allProducts.splice(oldProductIndex, 1);
-      }
+
+  // FIXED: Handle database IDs properly
+  if (isEditMode && originalProductId) {
+    // Keep the existing database ID
+    product["ID"] = parseInt(originalProductId);
+    const productIndex = allProducts.findIndex(p => p["ID"].toString() === originalProductId);
+    if (productIndex !== -1) {
+      allProducts[productIndex] = product;
     } else {
-      // Simple update, remove the existing product first
-      const productIndex = allProducts.findIndex(p => p["ID"] === originalProductId);
-      if (productIndex !== -1) {
-        allProducts.splice(productIndex, 1);
-      }
-    }
-  } else {
-    // Check if product code already exists for new products
-    const productCodeExists = allProducts.some(p => p["Product Code"] === product["Product Code"]);
-    if (productCodeExists) {
-      showNotification('Product code already exists', 'danger');
+      console.error('Product not found for update');
+      showNotification('Error: Product not found for update', 'danger');
       return;
     }
-  }
-  
-  // Add the product to the array
+  } else {
+  // For new products, add to array without ID - server will generate it
   allProducts.push(product);
-  
-  // Save to server
+}
+
+  // Save to server - it will handle ID generation for new products
   saveInventoryToServer(allProducts).then(() => {
-    // Update active products list
+    // Reload data from server to get correct IDs
+    return loadInventoryFromServer();
+  }).then(() => {
     products = allProducts.filter(p => p["Active Status"] === "Active");
-    
-    // Re-render table
     filterInventoryTable();
     
-    // Hide the modal
     const modalElement = document.getElementById('productModal');
     const productModal = bootstrap.Modal.getInstance(modalElement);
-    productModal.hide();
+    if (productModal) {
+      productModal.hide();
+    }
     
     showNotification(`Product ${isEditMode ? 'updated' : 'added'} successfully`, 'success');
   }).catch(error => {
+    console.error('Error saving product:', error);
     showNotification('Error saving product: ' + error.message, 'danger');
+    
+    // Reload from server to ensure data consistency
+    loadInventoryFromServer();
   });
 }
 
 // Save client (add new or update existing) with improved validation
 function saveClient() {
-  // Get form values
   const form = document.getElementById('clientForm');
   
-  // Basic validation
   if (!form.checkValidity()) {
-    // Trigger browser validation UI
     form.reportValidity();
     return;
   }
   
-  // Show saving indicator
   showNotification('Saving client...', 'info');
   
-  // Get edit mode and original client code
   const isEditMode = document.getElementById('editClientMode').value === 'true';
   const originalClientCode = document.getElementById('originalClientCode').value;
   
-  // Create the client object
   const client = {
     "Client Name": document.getElementById('clientName').value,
     "Client Code": document.getElementById('clientCode').value,
@@ -1639,31 +1637,25 @@ function saveClient() {
     "Status": document.getElementById('clientStatus').value
   };
   
-  // Handle edit mode logic
   if (isEditMode) {
-    // Check if client code has changed
     if (originalClientCode !== client["Client Code"]) {
-      // This is a more complex update, need to delete old one first
       const clientCodeExists = allClients.some(c => c["Client Code"] === client["Client Code"] && c["Client Code"] !== originalClientCode);
       if (clientCodeExists) {
         showNotification('Client code already exists', 'danger');
         return;
       }
       
-      // Remove the old client
       const oldClientIndex = allClients.findIndex(c => c["Client Code"] === originalClientCode);
       if (oldClientIndex !== -1) {
         allClients.splice(oldClientIndex, 1);
       }
     } else {
-      // Simple update, remove the existing client first
       const clientIndex = allClients.findIndex(c => c["Client Code"] === client["Client Code"]);
       if (clientIndex !== -1) {
         allClients.splice(clientIndex, 1);
       }
     }
   } else {
-    // Check if client code already exists for new clients
     const clientCodeExists = allClients.some(c => c["Client Code"] === client["Client Code"]);
     if (clientCodeExists) {
       showNotification('Client code already exists', 'danger');
@@ -1671,21 +1663,13 @@ function saveClient() {
     }
   }
   
-  // Add the client to the array
   allClients.push(client);
   
-  // Save to server
   saveClientsToServer(allClients).then(() => {
-    // Update active clients list
     clients = allClients.filter(c => c["Status"] === "Active");
-    
-    // Re-render table
     filterClientsTable();
-    
-    // Update the client dropdown in case clients changed
     populateClientDropdown();
     
-    // Hide the modal
     const modalElement = document.getElementById('clientModal');
     const clientModal = bootstrap.Modal.getInstance(modalElement);
     clientModal.hide();
@@ -1704,7 +1688,7 @@ function confirmDeleteProduct(productId) {  // Changed parameter name
   }
   
   // Find the product
-  const product = allProducts.find(p => p["ID"] === productId);  // Changed to find by ID
+  const product = allProducts.find(p => p["ID"].toString() === productId.toString());
   if (!product) {
     showNotification('Product not found', 'danger');
     return;
@@ -1810,7 +1794,7 @@ function executeConfirmedAction() {
 // Delete product with improved feedback
 function deleteProduct(productId) {
   // Find the product
-  const productIndex = allProducts.findIndex(p => p["ID"] === productId);
+  const productIndex = allProducts.findIndex(p => p["ID"].toString() === productId.toString());
   if (productIndex === -1) {
     showNotification('Product not found', 'danger');
     return;
