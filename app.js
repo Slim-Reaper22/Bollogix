@@ -612,16 +612,13 @@ function loadInventoryFromServer() {
     `;
   }
   
-  return fetch('/api/inventory')  // <-- ADD "return" here
+  return fetch('/api/inventory')
     .then(response => {
-      // ... keep all existing code the same ...
-      return data; // <-- ADD this line at the end of the then block
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status} ${response.statusText}`);
+      }
+      return response.json();
     })
-    .catch(error => {
-      // ... keep all existing code the same ...
-      throw error; // <-- ADD this line at the end of the catch block
-    });
-}
     .then(data => {
       console.log("Received data from server:", data);
       
