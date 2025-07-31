@@ -612,7 +612,7 @@ function loadInventoryFromServer() {
     `;
   }
   
-  return fetch('/api/inventory')
+    fetch('/api/inventory')
     .then(response => {
       if (!response.ok) {
         throw new Error(`Server returned ${response.status} ${response.statusText}`);
