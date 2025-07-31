@@ -612,13 +612,16 @@ function loadInventoryFromServer() {
     `;
   }
   
-  fetch('/api/inventory')
+  return fetch('/api/inventory')  // <-- ADD "return" here
     .then(response => {
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status} ${response.statusText}`);
-      }
-      return response.json();
+      // ... keep all existing code the same ...
+      return data; // <-- ADD this line at the end of the then block
     })
+    .catch(error => {
+      // ... keep all existing code the same ...
+      throw error; // <-- ADD this line at the end of the catch block
+    });
+}
     .then(data => {
       console.log("Received data from server:", data);
       
@@ -1529,82 +1532,76 @@ function saveProduct() {
   const isEditMode = document.getElementById('editProductMode').value === 'true';
   const originalProductCode = document.getElementById('originalProductCode').value;
   
-  // Create the product object
-  const product = {
-	"ID": isEditMode ? originalProductId : Date.now().toString(),  
-    "Product Name": document.getElementById('productName').value,
-    "Product Code": document.getElementById('productCode').value,
-    "Product Description": document.getElementById('productDescription').value,
-    "Grade": document.getElementById('productGrade').value,
-    "U/M": document.getElementById('productUnitOfMeasure').value,
-    "NMFC #": document.getElementById('nmfcNumber').value,
-    "Freight Class": document.getElementById('freightClass').value,
-    "Packing Group": document.getElementById('packingGroup').value,
-    "Active Status": document.getElementById('activeStatus').value,
-    "Net Weight (Per Package)": document.getElementById('netWeight').value,
-    "Gross Weight (Per Package)": document.getElementById('grossWeight').value,
-    "Price": document.getElementById('productPrice').value,
-    "Account": document.getElementById('account').value,
-    "Inventory Type": document.getElementById('inventoryType').value,
-    "Hazardous Material? (x if Yes)": document.getElementById('isHazardousMaterial').value,
-    "Hazmat Class": document.getElementById('hazmatClass').value,
-    "Non Hazmat Class": document.getElementById('nonHazmatClass').value,
-    "Stackable?": document.getElementById('stackable').value
-  };
+// Create the product object
+const product = { 
+  "Product Name": document.getElementById('productName').value,
+  "Product Code": document.getElementById('productCode').value,
+  "Product Description": document.getElementById('productDescription').value,
+  "Grade": document.getElementById('productGrade').value,
+  "U/M": document.getElementById('productUnitOfMeasure').value,
+  "NMFC #": document.getElementById('nmfcNumber').value,
+  "Freight Class": document.getElementById('freightClass').value,
+  "Packing Group": document.getElementById('packingGroup').value,
+  "Active Status": document.getElementById('activeStatus').value,
+  "Net Weight (Per Package)": document.getElementById('netWeight').value,
+  "Gross Weight (Per Package)": document.getElementById('grossWeight').value,
+  "Price": document.getElementById('productPrice').value,
+  "Account": document.getElementById('account').value,
+  "Inventory Type": document.getElementById('inventoryType').value,
+  "Hazardous Material? (x if Yes)": document.getElementById('isHazardousMaterial').value,
+  "Hazmat Class": document.getElementById('hazmatClass').value,
+  "Non Hazmat Class": document.getElementById('nonHazmatClass').value,
+  "Stackable?": document.getElementById('stackable').value
+};
+
+// Handle edit mode - preserve the original database ID
+if (isEditMode && originalProductId) {
+  product["ID"] = originalProductId; // Keep the original database ID
   
-  // Handle edit mode logic
-  if (isEditMode) {
-    // Check if product code has changed
-    if (originalProductCode !== product["Product Code"]) {
-      // This is a more complex update, need to delete old one first
-      const productCodeExists = allProducts.some(p => p["Product Code"] === product["Product Code"] && p["ID"] !== originalProductId);
-      if (productCodeExists) {
-        showNotification('Product code already exists', 'danger');
-        return;
-      }
-      
-      // Remove the old product
-      const oldProductIndex = allProducts.findIndex(p => p["ID"] === originalProductId);
-      if (oldProductIndex !== -1) {
-        allProducts.splice(oldProductIndex, 1);
-      }
-    } else {
-      // Simple update, remove the existing product first
-      const productIndex = allProducts.findIndex(p => p["ID"] === originalProductId);
-      if (productIndex !== -1) {
-        allProducts.splice(productIndex, 1);
-      }
-    }
+  // Update the product in the local array
+  const productIndex = allProducts.findIndex(p => p["ID"] === originalProductId);
+  if (productIndex !== -1) {
+    allProducts[productIndex] = product;
   } else {
-    // Check if product code already exists for new products
-    const productCodeExists = allProducts.some(p => p["Product Code"] === product["Product Code"]);
-    if (productCodeExists) {
-      showNotification('Product code already exists', 'danger');
-      return;
-    }
+    // If not found, add it (shouldn't happen in edit mode)
+    allProducts.push(product);
+  }
+} else {
+  // For new products, DON'T set an ID - let the server assign one
+  delete product["ID"];
+  
+  // Check if product code already exists for new products
+  const productCodeExists = allProducts.some(p => p["Product Code"] === product["Product Code"]);
+  if (productCodeExists) {
+    showNotification('Product code already exists', 'danger');
+    return;
   }
   
-  // Add the product to the array
+  // Add to local array (will get proper ID from server response)
   allProducts.push(product);
-  
-  // Save to server
-  saveInventoryToServer(allProducts).then(() => {
-    // Update active products list
-    products = allProducts.filter(p => p["Active Status"] === "Active");
-    
-    // Re-render table
-    filterInventoryTable();
-    
-    // Hide the modal
-    const modalElement = document.getElementById('productModal');
-    const productModal = bootstrap.Modal.getInstance(modalElement);
-    productModal.hide();
-    
-    showNotification(`Product ${isEditMode ? 'updated' : 'added'} successfully`, 'success');
-  }).catch(error => {
-    showNotification('Error saving product: ' + error.message, 'danger');
-  });
 }
+  
+// Save to server
+saveInventoryToServer(allProducts).then(() => {
+  // Reload the inventory from server to get proper IDs
+  return loadInventoryFromServer();
+}).then(() => {
+  // Update active products list
+  products = allProducts.filter(p => p["Active Status"] === "Active");
+  
+  // Re-render table
+  filterInventoryTable();
+  
+  // Hide the modal
+  const modalElement = document.getElementById('productModal');
+  const productModal = bootstrap.Modal.getInstance(modalElement);
+  productModal.hide();
+  
+  showNotification(`Product ${isEditMode ? 'updated' : 'added'} successfully`, 'success');
+}).catch(error => {
+  console.error('Error saving product:', error);
+  showNotification('Error saving product: ' + error.message, 'danger');
+});
 
 // Save client (add new or update existing) with improved validation
 function saveClient() {
