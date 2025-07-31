@@ -1130,14 +1130,14 @@ function renderInventoryTable(data) {
     const editBtn = document.createElement('button');
     editBtn.className = 'btn btn-sm btn-primary inventory-action-btn';
     editBtn.innerHTML = '<i class="fas fa-edit me-1"></i> Edit';
-    editBtn.addEventListener('click', () => openEditProductModal(product["Product Code"]));
+    editBtn.addEventListener('click', () => openEditProductModal(product["ID"]));
     actionsTd.appendChild(editBtn);
     
     // Delete button
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'btn btn-sm btn-danger inventory-action-btn';
     deleteBtn.innerHTML = '<i class="fas fa-trash-alt me-1"></i> Delete';
-    deleteBtn.addEventListener('click', () => confirmDeleteProduct(product["Product Code"]));
+    deleteBtn.addEventListener('click', () => confirmDeleteProduct(product["ID"]));
     actionsTd.appendChild(deleteBtn);
     
     row.appendChild(actionsTd);
@@ -1414,9 +1414,9 @@ function openAddClientModal() {
 }
 
 // Open the edit product modal with enhanced UI
-function openEditProductModal(productCode) {
+function openEditProductModal(productId) {
   // Find the product
-  const product = allProducts.find(p => p["Product Code"] === productCode);
+  const product = allProducts.find(p => p["ID"] === productId);
   if (!product) {
     showNotification('Product not found', 'danger');
     return;
@@ -1427,7 +1427,8 @@ function openEditProductModal(productCode) {
   
   // Set mode to edit
   document.getElementById('editProductMode').value = 'true';
-  document.getElementById('originalProductCode').value = productCode;
+  document.getElementById('originalProductCode').value = product["Product Code"];
+  document.getElementById('originalProductId').value = productId;
   
   // Set title with product info
   document.getElementById('productModalLabel').innerHTML = `
@@ -1511,6 +1512,7 @@ function openEditClientModal(clientCode) {
 // Save product (add new or update existing) with improved validation
 function saveProduct() {
   // Get form values
+  const originalProductId = document.getElementById('originalProductId').value;
   const form = document.getElementById('productForm');
   
   // Basic validation
@@ -1529,6 +1531,7 @@ function saveProduct() {
   
   // Create the product object
   const product = {
+	"ID": isEditMode ? originalProductId : Date.now().toString(),  
     "Product Name": document.getElementById('productName').value,
     "Product Code": document.getElementById('productCode').value,
     "Product Description": document.getElementById('productDescription').value,
@@ -1554,20 +1557,20 @@ function saveProduct() {
     // Check if product code has changed
     if (originalProductCode !== product["Product Code"]) {
       // This is a more complex update, need to delete old one first
-      const productCodeExists = allProducts.some(p => p["Product Code"] === product["Product Code"] && p["Product Code"] !== originalProductCode);
+      const productCodeExists = allProducts.some(p => p["Product Code"] === product["Product Code"] && p["ID"] !== originalProductId);
       if (productCodeExists) {
         showNotification('Product code already exists', 'danger');
         return;
       }
       
       // Remove the old product
-      const oldProductIndex = allProducts.findIndex(p => p["Product Code"] === originalProductCode);
+      const oldProductIndex = allProducts.findIndex(p => p["ID"] === originalProductId);
       if (oldProductIndex !== -1) {
         allProducts.splice(oldProductIndex, 1);
       }
     } else {
       // Simple update, remove the existing product first
-      const productIndex = allProducts.findIndex(p => p["Product Code"] === product["Product Code"]);
+      const productIndex = allProducts.findIndex(p => p["ID"] === originalProductId);
       if (productIndex !== -1) {
         allProducts.splice(productIndex, 1);
       }
@@ -1694,14 +1697,14 @@ function saveClient() {
 }
 
 // Confirm delete product with improved UI
-function confirmDeleteProduct(productCode) {
+function confirmDeleteProduct(productId) {  // Changed parameter name
   // If called from the delete button in the edit modal
-  if (!productCode) {
-    productCode = document.getElementById('originalProductCode').value;
+  if (!productId) {  // Changed variable name
+    productId = document.getElementById('originalProductId').value;  // Changed to get ID instead of code
   }
   
   // Find the product
-  const product = allProducts.find(p => p["Product Code"] === productCode);
+  const product = allProducts.find(p => p["ID"] === productId);  // Changed to find by ID
   if (!product) {
     showNotification('Product not found', 'danger');
     return;
@@ -1719,7 +1722,7 @@ function confirmDeleteProduct(productCode) {
   
   // Store the product code as a data attribute on the confirm button
   document.getElementById('confirmActionBtn').dataset.action = 'deleteProduct';
-  document.getElementById('confirmActionBtn').dataset.productCode = productCode;
+  document.getElementById('confirmActionBtn').dataset.productId = productId;
   document.getElementById('confirmActionBtn').className = 'btn btn-danger';
   document.getElementById('confirmActionBtn').innerHTML = '<i class="fas fa-trash-alt me-1"></i> Delete Product';
   
@@ -1783,8 +1786,8 @@ function executeConfirmedAction() {
   const action = confirmBtn.dataset.action;
   
   if (action === 'deleteProduct') {
-    const productCode = confirmBtn.dataset.productCode;
-    deleteProduct(productCode);
+    const productId = confirmBtn.dataset.productId;
+    deleteProduct(productId);
   } else if (action === 'deleteClient') {
     const clientCode = confirmBtn.dataset.clientCode;
     deleteClient(clientCode);
@@ -1805,9 +1808,9 @@ function executeConfirmedAction() {
 }
 
 // Delete product with improved feedback
-function deleteProduct(productCode) {
+function deleteProduct(productId) {
   // Find the product
-  const productIndex = allProducts.findIndex(p => p["Product Code"] === productCode);
+  const productIndex = allProducts.findIndex(p => p["ID"] === productId);
   if (productIndex === -1) {
     showNotification('Product not found', 'danger');
     return;
@@ -2063,22 +2066,6 @@ function addPallet() {
   showNotification('Pallet added successfully', 'success');
 }
 
-// Create a unique ID for each product to ensure we can select the correct one
-function createUniqueProductId(product) {
-  // Combine product code and name to make a unique identifier
-  return `${product["Product Code"]}--${product["Product Name"]}`;
-}
-
-// Parse the unique product ID back to its components
-function parseUniqueProductId(uniqueId) {
-  // Split the ID into product code and name
-  const parts = uniqueId.split('--');
-  return {
-    code: parts[0],
-    name: parts.length > 1 ? parts[1] : ''
-  };
-}
-
 // Update the items list in the UI - modern styling for items
 function updateItemsList() {
   const itemsList = document.getElementById('itemsList');
@@ -2134,15 +2121,8 @@ function updateItemsList() {
         // Modern product item
         let product = null;
         
-        if (item.uniqueProductId) {
-          const parsed = parseUniqueProductId(item.uniqueProductId);
-          product = products.find(p => 
-            p["Product Code"] === parsed.code && p["Product Name"] === parsed.name);
-        } else if (item.productId && item.productName) {
-          product = products.find(p => 
-            p["Product Code"] === item.productId && p["Product Name"] === item.productName);
-        } else if (item.productId) {
-          product = products.find(p => p["Product Code"] === item.productId);
+        if (item.productId) {
+          product = products.find(p => p["ID"] === item.productId);
         }
         
         const isHazmat = product && product["Hazardous Material? (x if Yes)"];
@@ -2153,19 +2133,17 @@ function updateItemsList() {
               <div class="mb-2 me-3">
                 <label class="me-2"><i class="fas fa-flask text-primary me-1"></i> Product:</label>
                 <select class="form-select form-select-sm" style="min-width: 250px; display: inline-block;"
-                  onchange="updateItem(${item.id}, 'uniqueProductId', this.value)" required>
-                  <option value="" selected>Select a product...</option>
-                  ${products.map(p => {
-                    const uniqueId = createUniqueProductId(p);
-                    const isSelected = item.uniqueProductId === uniqueId || 
-                      (p["Product Code"] === item.productId && p["Product Name"] === item.productName);
-                    return `
-                      <option value="${uniqueId}" ${isSelected ? 'selected' : ''}>
-                        ${p["Product Name"]} (UN: ${p["Product Code"]})
-                      </option>
-                    `;
-                  }).join('')}
-                </select>
+                 onchange="updateItem(${item.id}, 'productId', this.value)" required>
+                 <option value="" selected>Select a product...</option>
+                 ${products.map(p => {
+                  const isSelected = item.productId === p["ID"];
+                  return `
+                    <option value="${p["ID"]}" ${isSelected ? 'selected' : ''}>
+                     ${p["Product Name"]} (${p["Product Code"]})
+                    </option>
+                  `;
+                }).join('')}
+              </select>
               </div>
               <div class="d-flex align-items-center mb-2 me-3">
                 <label class="me-2"><i class="fas fa-boxes text-primary me-1"></i> Quantity:</label>
@@ -2216,26 +2194,23 @@ function updateItem(id, property, value) {
   if (itemIndex !== -1) {
     bolItems[itemIndex][property] = value;
     
-    // If updating the uniqueProductId, also update productId and productName
-    if (property === 'uniqueProductId' && value) {
-      const parsed = parseUniqueProductId(value);
-      bolItems[itemIndex]['productId'] = parsed.code;
-      bolItems[itemIndex]['productName'] = parsed.name;
+    // If updating the productId
+    if (property === 'productId' && value) {
+      const product = products.find(p => p["ID"] === value);
       
-      // Find the product to ensure we have the right one
-      const product = products.find(p => 
-        p["Product Code"] === parsed.code && p["Product Name"] === parsed.name);
-      
-      // If the product exists, also set packaging to the product's U/M if not already set
-      if (product && (!bolItems[itemIndex]['packaging'] || bolItems[itemIndex]['packaging'] === '')) {
-        bolItems[itemIndex]['packaging'] = product["U/M"] || 'Case';
+      if (product) {
+        bolItems[itemIndex]['productId'] = value;
+        bolItems[itemIndex]['productName'] = product["Product Name"];
+        
+        if (!bolItems[itemIndex]['packaging'] || bolItems[itemIndex]['packaging'] === '') {
+          bolItems[itemIndex]['packaging'] = product["U/M"] || 'Case';
+        }
+        
+        showNotification(`Selected ${product["Product Name"]}`, 'success');
       }
-      
-      // Show a notification for the product selection
-      showNotification(`Selected ${parsed.name}`, 'success');
     }
     
-    updateItemsList();
+    updateItemsList();  // This should be here - outside the productId check
   }
 }
 
@@ -2268,16 +2243,9 @@ function calculateTotalWeight() {
       // Find the product using uniqueProductId, or fallback to productId and productName
       let product = null;
       
-      if (item.uniqueProductId) {
-        const parsed = parseUniqueProductId(item.uniqueProductId);
-        product = products.find(p => 
-          p["Product Code"] === parsed.code && p["Product Name"] === parsed.name);
-      } else if (item.productId && item.productName) {
-        product = products.find(p => 
-          p["Product Code"] === item.productId && p["Product Name"] === item.productName);
-      } else if (item.productId) {
-        product = products.find(p => p["Product Code"] === item.productId);
-      }
+      if (item.productId) {
+        product = products.find(p => p["ID"] === item.productId);
+      } 
       
       // Add product weight
       if (product && !isNaN(item.quantity) && item.quantity > 0) {
@@ -2585,15 +2553,12 @@ function generateDocument() {
       
       // If next item exists and is not a pallet, combine them
       if (nextItem && !nextItem.isPallet) {
+        
         // Find the product details
         let product = null;
         
-        if (nextItem.uniqueProductId) {
-          const parsed = parseUniqueProductId(nextItem.uniqueProductId);
-          product = products.find(p => 
-            p["Product Code"] === parsed.code && p["Product Name"] === parsed.name);
-        } else if (nextItem.productId) {
-          product = products.find(p => p["Product Code"] === nextItem.productId);
+        if (nextItem.productId) {
+          product = products.find(p => p["ID"] === nextItem.productId);
         }
         
         if (product) {
@@ -2668,12 +2633,8 @@ function generateDocument() {
       // This is a product item not associated with a pallet
       let product = null;
       
-      if (currentItem.uniqueProductId) {
-        const parsed = parseUniqueProductId(currentItem.uniqueProductId);
-        product = products.find(p => 
-          p["Product Code"] === parsed.code && p["Product Name"] === parsed.name);
-      } else if (currentItem.productId) {
-        product = products.find(p => p["Product Code"] === currentItem.productId);
+      if (currentItem.productId) {
+        product = products.find(p => p["ID"] === currentItem.productId);
       }
       
       if (product) {
@@ -2977,6 +2938,7 @@ function loadMockInventoryData() {
   // Create mock product data
   const mockProducts = [
     {
+      "ID": "1",
       "Product Name": "Sulfuric Acid",
       "Product Code": "UN1830",
       "U/M": "LB",
@@ -2997,6 +2959,7 @@ function loadMockInventoryData() {
       "Inventory Type": "HAZMAT"
     },
     {
+      "ID": "2",
       "Product Name": "Sodium Hydroxide",
       "Product Code": "UN1824",
       "U/M": "LB",
@@ -3017,6 +2980,7 @@ function loadMockInventoryData() {
       "Inventory Type": "HAZMAT"
     },
     {
+      "ID": "3",
       "Product Name": "Hydrogen Peroxide",
       "Product Code": "UN2014",
       "U/M": "LB",
@@ -3037,6 +3001,7 @@ function loadMockInventoryData() {
       "Inventory Type": "HAZMAT"
     },
     {
+      "ID": "4",
       "Product Name": "Acetone",
       "Product Code": "UN1090",
       "U/M": "LB",
@@ -3057,6 +3022,7 @@ function loadMockInventoryData() {
       "Inventory Type": "HAZMAT"
     },
     {
+      "ID": "5",
       "Product Name": "Glycerin",
       "Product Code": "GLY001",
       "U/M": "LB",

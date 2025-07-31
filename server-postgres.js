@@ -22,6 +22,7 @@ initializeDatabase().catch(console.error);
 const convertToCSVFormat = (rows, type) => {
   if (type === 'products') {
     return rows.map(row => ({
+      "ID": row.id ? row.id.toString() : null, // ADD THIS LINE
       "Product Name": row.product_name,
       "Product Code": row.product_code,
       "U/M": row.unit_of_measure,
@@ -103,26 +104,56 @@ app.post('/api/inventory/update', async (req, res) => {
 
     // Insert all products
     for (const product of products) {
-      await pool.query(`
-        INSERT INTO products (
-          product_name, product_code, unit_of_measure, product_description,
-          grade, nmfc_number, freight_class, packing_group,
-          net_weight, gross_weight, stackable, hazardous_material,
-          hazmat_class, non_hazmat_class, account, price,
-          active_status, inventory_type
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-      `, [
-        product["Product Name"], product["Product Code"], product["U/M"],
-        product["Product Description"], product["Grade"], product["NMFC #"],
-        product["Freight Class"], product["Packing Group"], 
-        parseFloat(product["Net Weight (Per Package)"]) || 0,
-        parseFloat(product["Gross Weight (Per Package)"]) || 0,
-        product["Stackable?"], product["Hazardous Material? (x if Yes)"],
-        product["Hazmat Class"], product["Non Hazmat Class"], product["Account"],
-        parseFloat(product["Price"]) || 0, product["Active Status"], 
-        product["Inventory Type"]
-      ]);
+      // If product has an ID, try to use it (for maintaining consistency)
+      if (product["ID"] && !isNaN(parseInt(product["ID"]))) {
+        await pool.query(`
+          INSERT INTO products (
+            id, product_name, product_code, unit_of_measure, product_description,
+            grade, nmfc_number, freight_class, packing_group,
+            net_weight, gross_weight, stackable, hazardous_material,
+            hazmat_class, non_hazmat_class, account, price,
+            active_status, inventory_type
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+        `, [
+          parseInt(product["ID"]),
+          product["Product Name"], product["Product Code"], product["U/M"],
+          product["Product Description"], product["Grade"], product["NMFC #"],
+          product["Freight Class"], product["Packing Group"], 
+          parseFloat(product["Net Weight (Per Package)"]) || 0,
+          parseFloat(product["Gross Weight (Per Package)"]) || 0,
+          product["Stackable?"], product["Hazardous Material? (x if Yes)"],
+          product["Hazmat Class"], product["Non Hazmat Class"], product["Account"],
+          parseFloat(product["Price"]) || 0, product["Active Status"], 
+          product["Inventory Type"]
+        ]);
+      } else {
+        // No ID provided, let database auto-generate
+        await pool.query(`
+          INSERT INTO products (
+            product_name, product_code, unit_of_measure, product_description,
+            grade, nmfc_number, freight_class, packing_group,
+            net_weight, gross_weight, stackable, hazardous_material,
+            hazmat_class, non_hazmat_class, account, price,
+            active_status, inventory_type
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+        `, [
+          product["Product Name"], product["Product Code"], product["U/M"],
+          product["Product Description"], product["Grade"], product["NMFC #"],
+          product["Freight Class"], product["Packing Group"], 
+          parseFloat(product["Net Weight (Per Package)"]) || 0,
+          parseFloat(product["Gross Weight (Per Package)"]) || 0,
+          product["Stackable?"], product["Hazardous Material? (x if Yes)"],
+          product["Hazmat Class"], product["Non Hazmat Class"], product["Account"],
+          parseFloat(product["Price"]) || 0, product["Active Status"], 
+          product["Inventory Type"]
+        ]);
+      }
     }
+
+    // Reset sequence to max ID to avoid conflicts
+    await pool.query(`
+      SELECT setval('products_id_seq', (SELECT MAX(id) FROM products), true)
+    `);
 
     await pool.query('COMMIT');
     res.json({ success: true, message: 'Inventory updated successfully' });
@@ -244,10 +275,10 @@ app.post('/api/clients/add', async (req, res) => {
   }
 });
 
-// API endpoint to update a specific product
-app.put('/api/inventory/:productCode', async (req, res) => {
+// API endpoint to update a specific product BY ID (CHANGED FROM PRODUCT CODE)
+app.put('/api/inventory/:productId', async (req, res) => {
   try {
-    const productCode = req.params.productCode;
+    const productId = req.params.productId;
     const { product } = req.body;
     
     if (!product || !product["Product Name"] || !product["Product Code"]) {
@@ -263,7 +294,7 @@ app.put('/api/inventory/:productCode', async (req, res) => {
         hazmat_class = $13, non_hazmat_class = $14, account = $15,
         price = $16, active_status = $17, inventory_type = $18,
         updated_at = CURRENT_TIMESTAMP
-      WHERE product_code = $19
+      WHERE id = $19
       RETURNING *
     `, [
       product["Product Name"], product["Product Code"], product["U/M"],
@@ -274,7 +305,7 @@ app.put('/api/inventory/:productCode', async (req, res) => {
       product["Stackable?"], product["Hazardous Material? (x if Yes)"],
       product["Hazmat Class"], product["Non Hazmat Class"], product["Account"],
       parseFloat(product["Price"]) || 0, product["Active Status"], 
-      product["Inventory Type"], productCode
+      product["Inventory Type"], parseInt(productId)
     ]);
 
     if (result.rowCount === 0) {
@@ -332,14 +363,14 @@ app.put('/api/clients/:clientCode', async (req, res) => {
   }
 });
 
-// API endpoint to delete a product
-app.delete('/api/inventory/:productCode', async (req, res) => {
+// API endpoint to delete a product BY ID (CHANGED FROM PRODUCT CODE)
+app.delete('/api/inventory/:productId', async (req, res) => {
   try {
-    const productCode = req.params.productCode;
+    const productId = req.params.productId;
     
     const result = await pool.query(
-      'DELETE FROM products WHERE product_code = $1 RETURNING *',
-      [productCode]
+      'DELETE FROM products WHERE id = $1 RETURNING *',
+      [parseInt(productId)]
     );
 
     if (result.rowCount === 0) {
@@ -371,6 +402,22 @@ app.delete('/api/clients/:clientCode', async (req, res) => {
   } catch (error) {
     console.error('Error deleting client:', error);
     res.status(500).json({ error: 'Failed to delete client' });
+  }
+});
+
+// Export inventory to CSV
+app.get('/api/inventory/export', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM products ORDER BY product_name');
+    const products = convertToCSVFormat(result.rows, 'products');
+    const csv = unparse(products);
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="Inventory_Export_${new Date().toISOString().slice(0, 10)}.csv"`);
+    res.send(csv);
+  } catch (error) {
+    console.error('Error exporting inventory:', error);
+    res.status(500).json({ error: 'Failed to export inventory' });
   }
 });
 
