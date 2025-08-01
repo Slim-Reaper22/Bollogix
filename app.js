@@ -1584,8 +1584,9 @@ if (isEditMode && originalProductId) {
 // Save to server
 saveInventoryToServer(allProducts).then(() => {
   // Reload the inventory from server to get proper IDs
-  return ();
+  return loadInventoryFromServer();  // <-- ADD THE FUNCTION NAME
 }).then(() => {
+	
   // Update active products list
   products = allProducts.filter(p => p["Active Status"] === "Active");
   
