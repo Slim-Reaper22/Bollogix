@@ -1603,6 +1603,7 @@ saveInventoryToServer(allProducts).then(() => {
   console.error('Error saving product:', error);
   showNotification('Error saving product: ' + error.message, 'danger');
 });
+}
 
 // Save client (add new or update existing) with improved validation
 function saveClient() {
