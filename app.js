@@ -2579,7 +2579,7 @@ function generateDocument() {
               <td>${nextItem.packaging || product["U/M"] || 'Case'}</td>
               <td>${nextItem.quantity}</td>
               <td>${isHazmat ? '<span class="highlight">X</span>' : ""}</td>
-              <td>${product["Product Code"] || ""}, <strong>${product["Product Name"] || ""}</strong>${isHazmat ? ', <span class="highlight"> ' + (product["Hazmat Class"] || "N/A") + '</span>' : ''}, PG: ${product["Packing Group"] || "N/A"}, ${netWeight.toFixed(2)} lbs Net</td>
+              <td>${product["Product Code"] || ""}, <strong>${product["Product Description"] || ""}</strong>${isHazmat ? ', <span class="highlight"> ' + (product["Hazmat Class"] || "N/A") + '</span>' : ''}, PG: ${product["Packing Group"] || "N/A"}, ${netWeight.toFixed(2)} lbs Net</td>
               <td>${grossWeight.toFixed(2)} lbs</td>
               <td>${product["Freight Class"] || ""}</td>
               <td>${product["NMFC #"] || ""}</td>
@@ -2651,7 +2651,7 @@ function generateDocument() {
             <td>${currentItem.packaging || product["U/M"] || 'Case'}</td>
             <td>${currentItem.quantity}</td>
             <td>${isHazmat ? '<span class="highlight">X</span>' : ""}</td>
-            <td>${product["Product Code"] || ""}, <strong>${product["Product Name"] || ""}</strong>${isHazmat ? ', <span class="highlight"> ' + (product["Hazmat Class"] || "N/A") + '</span>' : ''}, PG: ${product["Packing Group"] || "N/A"}, ${netWeight.toFixed(2)} lbs Net</td>
+            <td>${product["Product Code"] || ""}, <strong>${product["Product Description"] || ""}</strong>${isHazmat ? ', <span class="highlight"> ' + (product["Hazmat Class"] || "N/A") + '</span>' : ''}, PG: ${product["Packing Group"] || "N/A"}, ${netWeight.toFixed(2)} lbs Net</td>
             <td>${grossWeight.toFixed(2)} lbs</td>
             <td>${product["Freight Class"] || ""}</td>
             <td>${product["NMFC #"] || ""}</td>
